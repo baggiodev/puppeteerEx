@@ -1,26 +1,21 @@
 const puppeteer = require("puppeteer");
 const data = [];
 //part 2
-const mongojs = require("mongojs");
-// Database configuration
-const databaseUrl = "notesOffice";
-const collections = ["scrapedData"];
+// const mongojs = require("mongojs");
+const mongoose = require("mongoose");
 
-let db;
-(async function dbConnect() {
-  db = await mongojs(databaseUrl, collections);
+const db = require("./models");
 
-  await db.on("error", function(error) {
-    console.log("Database Error:", error);
+async function dbConnect() {
+  await mongoose.connect("mongodb://localhost/slippi", {
+    useNewUrlParser: true
   });
   await main();
-})();
+}
+dbConnect();
 
 async function main() {
   try {
-    //part 2
-    const bulk = db.a.initializeOrderedBulkOp();
-
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
     page.setUserAgent(
@@ -46,14 +41,12 @@ async function main() {
       }, viewerEl);
       obj.viewerCount = viewerCount;
       data.push(obj);
-      await bulk.insert(obj);
     }
     console.log(data);
-    await bulk.execute(function(err, res) {
-      console.log("done");
-    });
+    //part 2
+    await db.Category.insertMany(data);
     await browser.close();
-    await db.close();
+    await mongoose.connection.close();
   } catch (e) {
     console.error("we errored", e);
   }
