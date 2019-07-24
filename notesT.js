@@ -12,6 +12,7 @@ async function dbConnect() {
   });
   await main();
 }
+
 dbConnect();
 
 async function main() {
@@ -45,6 +46,7 @@ async function main() {
     console.log(data);
     //part 2
     await db.Category.insertMany(data);
+
     await browser.close();
     await mongoose.connection.close();
   } catch (e) {
